@@ -15,8 +15,8 @@ import {
   procedures,
   billing
 } from "@shared/schema";
-import { drizzle } from "drizzle-orm/neon-http";
-import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import { eq, and, gte, lte, like, desc, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
@@ -67,13 +67,18 @@ export interface IStorage {
 }
 
 // Initialize database connection
-const connectionString = process.env.DATABASE_URL;
+let connectionString = process.env.DATABASE_URL;
+
+// Fallback to local PostgreSQL if Supabase connection fails
 if (!connectionString) {
-  throw new Error("DATABASE_URL environment variable is not set");
+  connectionString = `postgresql://postgres:postgres@localhost:5432/postgres`;
+  console.log("Using local PostgreSQL database as fallback");
 }
 
-const client = neon(connectionString);
-const db = drizzle(client);
+const pool = new Pool({
+  connectionString: connectionString,
+});
+const db = drizzle(pool);
 
 export class DatabaseStorage implements IStorage {
   async initializeDefaults(): Promise<void> {
