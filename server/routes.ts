@@ -171,7 +171,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/appointments", async (req, res) => {
     try {
       console.log("Appointment request body:", req.body);
-      const appointmentData = insertAppointmentSchema.parse(req.body);
+      
+      // Transform string dates to Date objects before validation
+      const transformedData = {
+        ...req.body,
+        appointmentDate: new Date(req.body.appointmentDate),
+        checkedInAt: req.body.checkedInAt ? new Date(req.body.checkedInAt) : undefined,
+        completedAt: req.body.completedAt ? new Date(req.body.completedAt) : undefined,
+      };
+      
+      const appointmentData = insertAppointmentSchema.parse(transformedData);
       const appointment = await storage.createAppointment(appointmentData);
       res.status(201).json(appointment);
     } catch (error) {
@@ -185,7 +194,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/appointments/:id", async (req, res) => {
     try {
-      const appointmentData = insertAppointmentSchema.partial().parse(req.body);
+      // Transform string dates to Date objects before validation
+      const transformedData = {
+        ...req.body,
+        ...(req.body.appointmentDate && { appointmentDate: new Date(req.body.appointmentDate) }),
+        ...(req.body.checkedInAt && { checkedInAt: new Date(req.body.checkedInAt) }),
+        ...(req.body.completedAt && { completedAt: new Date(req.body.completedAt) }),
+      };
+      
+      const appointmentData = insertAppointmentSchema.partial().parse(transformedData);
       const appointment = await storage.updateAppointment(req.params.id, appointmentData);
       if (!appointment) {
         return res.status(404).json({ message: "Appointment not found" });
