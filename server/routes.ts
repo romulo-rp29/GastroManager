@@ -254,10 +254,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/procedures", async (req, res) => {
     try {
-      const procedureData = insertProcedureSchema.parse(req.body);
+      console.log("Procedure request body:", req.body);
+      
+      // Transform string dates to Date objects before validation
+      const transformedData = {
+        ...req.body,
+        scheduledDate: new Date(req.body.scheduledDate),
+        startTime: req.body.startTime ? new Date(req.body.startTime) : undefined,
+        endTime: req.body.endTime ? new Date(req.body.endTime) : undefined,
+      };
+      
+      const procedureData = insertProcedureSchema.parse(transformedData);
       const procedure = await storage.createProcedure(procedureData);
       res.status(201).json(procedure);
     } catch (error) {
+      console.error("Procedure creation error:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid procedure data", errors: error.errors });
       }
@@ -267,7 +278,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/procedures/:id", async (req, res) => {
     try {
-      const procedureData = insertProcedureSchema.partial().parse(req.body);
+      // Transform string dates to Date objects before validation
+      const transformedData = {
+        ...req.body,
+        ...(req.body.scheduledDate && { scheduledDate: new Date(req.body.scheduledDate) }),
+        ...(req.body.startTime && { startTime: new Date(req.body.startTime) }),
+        ...(req.body.endTime && { endTime: new Date(req.body.endTime) }),
+      };
+      
+      const procedureData = insertProcedureSchema.partial().parse(transformedData);
       const procedure = await storage.updateProcedure(req.params.id, procedureData);
       if (!procedure) {
         return res.status(404).json({ message: "Procedure not found" });
@@ -306,7 +325,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/billing", async (req, res) => {
     try {
-      const billingData = insertBillingSchema.parse(req.body);
+      // Transform string dates to Date objects before validation
+      const transformedData = {
+        ...req.body,
+        billingDate: req.body.billingDate ? new Date(req.body.billingDate) : new Date(),
+        dueDate: new Date(req.body.dueDate),
+        paidDate: req.body.paidDate ? new Date(req.body.paidDate) : undefined,
+      };
+      
+      const billingData = insertBillingSchema.parse(transformedData);
       const billingRecord = await storage.createBillingRecord(billingData);
       res.status(201).json(billingRecord);
     } catch (error) {
