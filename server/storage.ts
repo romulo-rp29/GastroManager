@@ -9,11 +9,14 @@ import {
   type InsertProcedure,
   type Billing, 
   type InsertBilling,
+  type PatientEvolution,
+  type InsertPatientEvolution,
   users,
   patients,
   appointments,
   procedures,
-  billing
+  billing,
+  patientEvolutions
 } from "@shared/schema";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
@@ -57,6 +60,13 @@ export interface IStorage {
   getBillingRecord(id: string): Promise<(Billing & { patient: Patient }) | undefined>;
   createBillingRecord(billing: InsertBilling): Promise<Billing>;
   updateBillingRecord(id: string, billing: Partial<InsertBilling>): Promise<Billing | undefined>;
+
+  // Patient Evolution methods
+  getPatientEvolutions(patientId: string, limit?: number, offset?: number): Promise<(PatientEvolution & { patient: Patient; doctor: User; appointment?: Appointment })[]>;
+  getPatientEvolution(id: string): Promise<(PatientEvolution & { patient: Patient; doctor: User; appointment?: Appointment }) | undefined>;
+  createPatientEvolution(evolution: InsertPatientEvolution): Promise<PatientEvolution>;
+  updatePatientEvolution(id: string, evolution: Partial<InsertPatientEvolution>): Promise<PatientEvolution | undefined>;
+  deletePatientEvolution(id: string): Promise<boolean>;
   
   // Stats methods
   getDashboardStats(): Promise<{
@@ -479,6 +489,89 @@ export class DatabaseStorage implements IStorage {
       activePatients: activePatientsResult[0]?.count || 0,
       monthlyRevenue: monthlyRevenueResult[0]?.total || 0,
     };
+  }
+
+  // Patient Evolution methods
+  async getPatientEvolutions(patientId: string, limit: number = 50, offset: number = 0): Promise<(PatientEvolution & { patient: Patient; doctor: User; appointment?: Appointment })[]> {
+    const result = await db
+      .select({
+        evolution: patientEvolutions,
+        patient: patients,
+        doctor: users,
+        appointment: appointments,
+      })
+      .from(patientEvolutions)
+      .innerJoin(patients, eq(patientEvolutions.patientId, patients.id))
+      .innerJoin(users, eq(patientEvolutions.doctorId, users.id))
+      .leftJoin(appointments, eq(patientEvolutions.appointmentId, appointments.id))
+      .where(eq(patientEvolutions.patientId, patientId))
+      .orderBy(desc(patientEvolutions.evolutionDate))
+      .limit(limit)
+      .offset(offset);
+
+    return result.map(row => ({
+      ...row.evolution,
+      patient: row.patient,
+      doctor: row.doctor,
+      appointment: row.appointment || undefined,
+    }));
+  }
+
+  async getPatientEvolution(id: string): Promise<(PatientEvolution & { patient: Patient; doctor: User; appointment?: Appointment }) | undefined> {
+    const result = await db
+      .select({
+        evolution: patientEvolutions,
+        patient: patients,
+        doctor: users,
+        appointment: appointments,
+      })
+      .from(patientEvolutions)
+      .innerJoin(patients, eq(patientEvolutions.patientId, patients.id))
+      .innerJoin(users, eq(patientEvolutions.doctorId, users.id))
+      .leftJoin(appointments, eq(patientEvolutions.appointmentId, appointments.id))
+      .where(eq(patientEvolutions.id, id))
+      .limit(1);
+
+    if (result.length === 0) return undefined;
+
+    const row = result[0];
+    return {
+      ...row.evolution,
+      patient: row.patient,
+      doctor: row.doctor,
+      appointment: row.appointment || undefined,
+    };
+  }
+
+  async createPatientEvolution(evolution: InsertPatientEvolution): Promise<PatientEvolution> {
+    const newEvolution = {
+      ...evolution,
+      id: randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    const result = await db.insert(patientEvolutions).values(newEvolution).returning();
+    return result[0];
+  }
+
+  async updatePatientEvolution(id: string, evolution: Partial<InsertPatientEvolution>): Promise<PatientEvolution | undefined> {
+    const updateData = {
+      ...evolution,
+      updatedAt: new Date(),
+    };
+    
+    const result = await db.update(patientEvolutions)
+      .set(updateData)
+      .where(eq(patientEvolutions.id, id))
+      .returning();
+    
+    return result[0];
+  }
+
+  async deletePatientEvolution(id: string): Promise<boolean> {
+    const result = await db.delete(patientEvolutions).where(eq(patientEvolutions.id, id));
+    return (result as any).rowCount > 0;
   }
 }
 

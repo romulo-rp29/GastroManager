@@ -5,7 +5,8 @@ import {
   insertPatientSchema, 
   insertAppointmentSchema, 
   insertProcedureSchema, 
-  insertBillingSchema 
+  insertBillingSchema,
+  insertPatientEvolutionSchema 
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -357,6 +358,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid billing data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to update billing record" });
+    }
+  });
+
+  // Patient Evolution routes
+  app.get("/api/patient-evolutions/:patientId", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const evolutions = await storage.getPatientEvolutions(req.params.patientId, limit, offset);
+      res.json(evolutions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch patient evolutions" });
+    }
+  });
+
+  app.get("/api/patient-evolution/:id", async (req, res) => {
+    try {
+      const evolution = await storage.getPatientEvolution(req.params.id);
+      if (!evolution) {
+        return res.status(404).json({ message: "Patient evolution not found" });
+      }
+      res.json(evolution);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch patient evolution" });
+    }
+  });
+
+  app.post("/api/patient-evolutions", async (req, res) => {
+    try {
+      console.log("Patient evolution request body:", req.body);
+      
+      // Transform string dates to Date objects before validation
+      const transformedData = {
+        ...req.body,
+        evolutionDate: req.body.evolutionDate ? new Date(req.body.evolutionDate) : new Date(),
+      };
+      
+      const evolutionData = insertPatientEvolutionSchema.parse(transformedData);
+      const evolution = await storage.createPatientEvolution(evolutionData);
+      res.status(201).json(evolution);
+    } catch (error) {
+      console.error("Patient evolution creation error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid evolution data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create patient evolution" });
+    }
+  });
+
+  app.patch("/api/patient-evolutions/:id", async (req, res) => {
+    try {
+      // Transform string dates to Date objects before validation
+      const transformedData = {
+        ...req.body,
+        ...(req.body.evolutionDate && { evolutionDate: new Date(req.body.evolutionDate) }),
+      };
+      
+      const evolutionData = insertPatientEvolutionSchema.partial().parse(transformedData);
+      const evolution = await storage.updatePatientEvolution(req.params.id, evolutionData);
+      if (!evolution) {
+        return res.status(404).json({ message: "Patient evolution not found" });
+      }
+      res.json(evolution);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid evolution data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update patient evolution" });
+    }
+  });
+
+  app.delete("/api/patient-evolutions/:id", async (req, res) => {
+    try {
+      const success = await storage.deletePatientEvolution(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "Patient evolution not found" });
+      }
+      res.json({ message: "Patient evolution deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete patient evolution" });
     }
   });
 

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { Home, UserX, Calendar, Activity, DollarSign, BarChart, LogOut, Stethoscope } from 'lucide-react';
+import { Home, UserX, Calendar, Activity, DollarSign, BarChart, LogOut, Stethoscope, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
@@ -9,6 +9,7 @@ const navigation = [
   { name: 'Patients', href: '/patients', icon: UserX },
   { name: 'Appointments', href: '/appointments', icon: Calendar },
   { name: 'Procedures', href: '/procedures', icon: Activity },
+  { name: 'Patient Evolutions', href: '/patient-evolutions', icon: FileText },
   { name: 'Billing', href: '/billing', icon: DollarSign },
   { name: 'Reports', href: '/reports', icon: BarChart },
 ];

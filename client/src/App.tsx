@@ -11,6 +11,7 @@ import Appointments from "@/pages/appointments";
 import Procedures from "@/pages/procedures";
 import Billing from "@/pages/billing";
 import Reports from "@/pages/reports";
+import PatientEvolutions from "@/pages/patient-evolutions";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
@@ -60,6 +61,11 @@ function Router() {
       <Route path="/procedures" component={() => (
         <ProtectedRoute>
           <Procedures />
+        </ProtectedRoute>
+      )} />
+      <Route path="/patient-evolutions" component={() => (
+        <ProtectedRoute>
+          <PatientEvolutions />
         </ProtectedRoute>
       )} />
       <Route path="/billing" component={() => (
