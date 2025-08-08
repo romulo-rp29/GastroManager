@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { insertAppointmentSchema, type InsertAppointment, type Appointment, type Patient } from '@shared/schema';
+import { useAuth } from '@/contexts/auth-context';
 
 const appointmentFormSchema = insertAppointmentSchema.extend({
   appointmentDate: z.string(),
@@ -43,6 +44,7 @@ export default function AppointmentForm({
   onCancel,
   isSubmitting = false,
 }: AppointmentFormProps) {
+  const { user } = useAuth();
   const form = useForm<z.infer<typeof appointmentFormSchema>>({
     resolver: zodResolver(appointmentFormSchema),
     defaultValues: {
@@ -58,12 +60,26 @@ export default function AppointmentForm({
     },
   });
 
-  const handleSubmit = (data: z.infer<typeof appointmentFormSchema>) => {
+  const handleSubmit = async (data: z.infer<typeof appointmentFormSchema>) => {
+    if (!user) return;
+    
+    // Get the first doctor ID if logged in as receptionist
+    let doctorId = user.role === 'doctor' ? user.id : '';
+    if (user.role === 'receptionist') {
+      try {
+        const response = await fetch('/api/users?role=doctor');
+        const doctors = await response.json();
+        doctorId = doctors.length > 0 ? doctors[0].id : user.id;
+      } catch (error) {
+        doctorId = user.id; // Fallback to current user
+      }
+    }
+    
     const submitData: InsertAppointment = {
       ...data,
       appointmentDate: new Date(data.appointmentDate),
-      doctorId: 'doctor-id', // This should come from auth context
-      createdBy: 'doctor-id', // This should come from auth context
+      doctorId: doctorId,
+      createdBy: user.id,
     };
     onSubmit(submitData);
   };

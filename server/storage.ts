@@ -23,6 +23,7 @@ import { randomUUID } from "crypto";
 export interface IStorage {
   // User methods
   getUser(id: string): Promise<User | undefined>;
+  getUsers(role?: string): Promise<User[]>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, user: Partial<InsertUser>): Promise<User | undefined>;
@@ -118,6 +119,14 @@ export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
     return result[0];
+  }
+
+  async getUsers(role?: string): Promise<User[]> {
+    if (role) {
+      return await db.select().from(users)
+        .where(and(eq(users.isActive, true), eq(users.role, role as any)));
+    }
+    return await db.select().from(users).where(eq(users.isActive, true));
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {

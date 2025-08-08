@@ -36,6 +36,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Users routes
+  app.get("/api/users", async (req, res) => {
+    try {
+      const role = req.query.role as string;
+      const users = await storage.getUsers(role);
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
   // Dashboard stats
   app.get("/api/dashboard/stats", async (req, res) => {
     try {
@@ -159,10 +170,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/appointments", async (req, res) => {
     try {
+      console.log("Appointment request body:", req.body);
       const appointmentData = insertAppointmentSchema.parse(req.body);
       const appointment = await storage.createAppointment(appointmentData);
       res.status(201).json(appointment);
     } catch (error) {
+      console.error("Appointment creation error:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid appointment data", errors: error.errors });
       }
