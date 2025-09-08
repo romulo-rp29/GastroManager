@@ -1,0 +1,495 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GastroMed Practice Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'medical-blue': '#2563eb',
+                        'medical-green': '#059669',
+                        'medical-amber': '#d97706',
+                        'medical-red': '#dc2626'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui']
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-50 font-sans">
+    
+    <!-- @COMPONENT: AppLayout [Main application shell with navigation] -->
+    <div class="min-h-screen flex">
+        
+        <!-- @COMPONENT: Sidebar [Main navigation] -->
+        <div class="w-64 bg-white shadow-lg border-r border-slate-200 flex flex-col">
+            <div class="p-6 border-b border-slate-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-medical-blue rounded-lg flex items-center justify-center">
+                        <i class="fas fa-stethoscope text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-semibold text-slate-900">GastroMed</h1>
+                        <p class="text-sm text-slate-500" data-bind="practice.name">Dr. Smith's Practice</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- @STATE: activeTab:string = 'dashboard' -->
+            <nav class="flex-1 p-4 space-y-1">
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-medical-blue text-white" data-event="click:setActiveTab('dashboard')">
+                    <i class="fas fa-home w-5 mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg" data-event="click:setActiveTab('patients')">
+                    <i class="fas fa-user-injured w-5 mr-3"></i>
+                    Patients
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg" data-event="click:setActiveTab('appointments')">
+                    <i class="fas fa-calendar-check w-5 mr-3"></i>
+                    Appointments
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg" data-event="click:setActiveTab('procedures')">
+                    <i class="fas fa-procedures w-5 mr-3"></i>
+                    Procedures
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg" data-event="click:setActiveTab('billing')">
+                    <i class="fas fa-file-invoice-dollar w-5 mr-3"></i>
+                    Billing
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg" data-event="click:setActiveTab('reports')">
+                    <i class="fas fa-chart-bar w-5 mr-3"></i>
+                    Reports
+                </a>
+            </nav>
+            
+            <div class="p-4 border-t border-slate-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-slate-300 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-slate-600 text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-slate-900" data-bind="user.name">Dr. Sarah Smith</p>
+                        <p class="text-xs text-slate-500" data-bind="user.role">Gastroenterologist</p>
+                    </div>
+                    <button class="text-slate-400 hover:text-slate-600" data-event="click:handleLogout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent [Primary content area] -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            
+            <!-- @COMPONENT: TopBar [Header with search and notifications] -->
+            <header class="bg-white shadow-sm border-b border-slate-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <h2 class="text-xl font-semibold text-slate-900">Dashboard</h2>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-slate-400"></i>
+                            </div>
+                            <input type="text" placeholder="Search patients..." class="pl-10 pr-4 py-2 w-80 border border-slate-300 rounded-lg focus:ring-2 focus:ring-medical-blue focus:border-transparent" data-implementation="Should implement patient search with real-time results">
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <button class="relative p-2 text-slate-400 hover:text-slate-600" data-event="click:toggleNotifications">
+                            <i class="fas fa-bell text-lg"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-medical-red rounded-full"></span>
+                        </button>
+                        <div class="text-right">
+                            <p class="text-sm text-slate-500">Today's Date</p>
+                            <p class="text-sm font-medium text-slate-900" data-bind="currentDate">December 15, 2024</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: TopBar -->
+
+            <!-- @COMPONENT: DashboardContent [Main dashboard view] -->
+            <main class="flex-1 overflow-y-auto p-6">
+                
+                <!-- @COMPONENT: StatsCards [Key metrics overview] -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-600">Today's Appointments</p>
+                                <p class="text-2xl font-bold text-slate-900" data-bind="stats.todayAppointments">12</p>
+                            </div>
+                            <div class="w-12 h-12 bg-medical-blue/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar-day text-medical-blue text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center text-sm">
+                            <span class="text-medical-green font-medium">+2</span>
+                            <span class="text-slate-500 ml-1">from yesterday</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-600">Pending Procedures</p>
+                                <p class="text-2xl font-bold text-slate-900" data-bind="stats.pendingProcedures">8</p>
+                            </div>
+                            <div class="w-12 h-12 bg-medical-amber/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-procedures text-medical-amber text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center text-sm">
+                            <span class="text-medical-amber font-medium">3 urgent</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-600">Active Patients</p>
+                                <p class="text-2xl font-bold text-slate-900" data-bind="stats.activePatients">347</p>
+                            </div>
+                            <div class="w-12 h-12 bg-medical-green/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-medical-green text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center text-sm">
+                            <span class="text-medical-green font-medium">+15</span>
+                            <span class="text-slate-500 ml-1">this month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-600">Revenue (MTD)</p>
+                                <p class="text-2xl font-bold text-slate-900" data-bind="stats.monthlyRevenue">$24,580</p>
+                            </div>
+                            <div class="w-12 h-12 bg-medical-green/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-dollar-sign text-medical-green text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center text-sm">
+                            <span class="text-medical-green font-medium">+8.2%</span>
+                            <span class="text-slate-500 ml-1">vs last month</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: StatsCards -->
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    <!-- @COMPONENT: TodaysSchedule [Today's appointments] -->
+                    <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-slate-200">
+                        <div class="p-6 border-b border-slate-200">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-semibold text-slate-900">Today's Schedule</h3>
+                                <button class="text-medical-blue hover:text-medical-blue/80 text-sm font-medium" data-event="click:viewFullCalendar">
+                                    View Calendar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6">
+                            <!-- @MAP: todayAppointments.map(appointment => ( -->
+                            <div class="space-y-4">
+                                <div class="flex items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50" data-event="click:viewAppointment">
+                                    <div class="flex-shrink-0 w-16 text-center">
+                                        <p class="text-sm font-medium text-slate-900" data-bind="appointment.time">9:00 AM</p>
+                                        <p class="text-xs text-slate-500">30 min</p>
+                                    </div>
+                                    <div class="flex-1 ml-4">
+                                        <div class="flex items-center space-x-2">
+                                            <p class="text-sm font-medium text-slate-900" data-bind="appointment.patientName">John Anderson</p>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800" data-bind="appointment.type">Consultation</span>
+                                        </div>
+                                        <p class="text-sm text-slate-500" data-bind="appointment.reason">Follow-up for GERD treatment</p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Confirmed</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50" data-event="click:viewAppointment">
+                                    <div class="flex-shrink-0 w-16 text-center">
+                                        <p class="text-sm font-medium text-slate-900" data-bind="appointment.time">10:30 AM</p>
+                                        <p class="text-xs text-slate-500">60 min</p>
+                                    </div>
+                                    <div class="flex-1 ml-4">
+                                        <div class="flex items-center space-x-2">
+                                            <p class="text-sm font-medium text-slate-900" data-bind="appointment.patientName">Maria Rodriguez</p>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800" data-bind="appointment.type">Endoscopy</span>
+                                        </div>
+                                        <p class="text-sm text-slate-500" data-bind="appointment.reason">Upper GI diagnostic procedure</p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Check-in</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50" data-event="click:viewAppointment">
+                                    <div class="flex-shrink-0 w-16 text-center">
+                                        <p class="text-sm font-medium text-slate-900" data-bind="appointment.time">2:00 PM</p>
+                                        <p class="text-xs text-slate-500">30 min</p>
+                                    </div>
+                                    <div class="flex-1 ml-4">
+                                        <div class="flex items-center space-x-2">
+                                            <p class="text-sm font-medium text-slate-900" data-bind="appointment.patientName">Robert Chen</p>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800" data-bind="appointment.type">Consultation</span>
+                                        </div>
+                                        <p class="text-sm text-slate-500" data-bind="appointment.reason">New patient evaluation</p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Confirmed</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: TodaysSchedule -->
+
+                    <!-- @COMPONENT: QuickActions [Common workflow shortcuts] -->
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                            <h3 class="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h3>
+                            <div class="space-y-3">
+                                <button class="w-full flex items-center justify-center px-4 py-3 bg-medical-blue text-white rounded-lg hover:bg-medical-blue/90 transition-colors" data-event="click:newAppointment">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    New Appointment
+                                </button>
+                                <button class="w-full flex items-center justify-center px-4 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors" data-event="click:newPatient">
+                                    <i class="fas fa-user-plus mr-2"></i>
+                                    Add Patient
+                                </button>
+                                <button class="w-full flex items-center justify-center px-4 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors" data-event="click:checkInPatient">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    Patient Check-in
+                                </button>
+                                <button class="w-full flex items-center justify-center px-4 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors" data-event="click:viewReports">
+                                    <i class="fas fa-file-alt mr-2"></i>
+                                    Generate Report
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- @COMPONENT: RecentActivity [Recent system activity] -->
+                        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                            <h3 class="text-lg font-semibold text-slate-900 mb-4">Recent Activity</h3>
+                            <div class="space-y-4">
+                                <!-- @MAP: recentActivities.map(activity => ( -->
+                                <div class="flex items-start space-x-3">
+                                    <div class="flex-shrink-0 w-2 h-2 bg-medical-green rounded-full mt-2"></div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm text-slate-900" data-bind="activity.description">Maria Rodriguez checked in for endoscopy</p>
+                                        <p class="text-xs text-slate-500" data-bind="activity.timestamp">2 minutes ago</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start space-x-3">
+                                    <div class="flex-shrink-0 w-2 h-2 bg-medical-blue rounded-full mt-2"></div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm text-slate-900" data-bind="activity.description">New appointment scheduled for David Kim</p>
+                                        <p class="text-xs text-slate-500" data-bind="activity.timestamp">15 minutes ago</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start space-x-3">
+                                    <div class="flex-shrink-0 w-2 h-2 bg-medical-amber rounded-full mt-2"></div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm text-slate-900" data-bind="activity.description">Payment received from John Anderson</p>
+                                        <p class="text-xs text-slate-500" data-bind="activity.timestamp">1 hour ago</p>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+                        <!-- @END_COMPONENT: RecentActivity -->
+                    </div>
+                    <!-- @END_COMPONENT: QuickActions -->
+                </div>
+                
+                <!-- @COMPONENT: PatientModal [Patient details modal - hidden by default] -->
+                <div class="fixed inset-0 bg-black bg-opacity-50 hidden z-50" id="patientModal" data-implementation="Should be controlled by React state">
+                    <div class="flex items-center justify-center min-h-screen p-4">
+                        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+                            <div class="flex items-center justify-between p-6 border-b border-slate-200">
+                                <h3 class="text-lg font-semibold text-slate-900">Patient Details</h3>
+                                <button class="text-slate-400 hover:text-slate-600" data-event="click:closeModal">
+                                    <i class="fas fa-times text-xl"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="p-6 overflow-y-auto max-h-[70vh]">
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    <div class="lg:col-span-2 space-y-6">
+                                        <!-- Patient Information -->
+                                        <div class="bg-slate-50 rounded-lg p-4">
+                                            <h4 class="font-semibold text-slate-900 mb-3">Patient Information</h4>
+                                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                                <div>
+                                                    <p class="text-slate-500">Full Name</p>
+                                                    <p class="font-medium text-slate-900" data-bind="patient.fullName">Maria Rodriguez</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-slate-500">Date of Birth</p>
+                                                    <p class="font-medium text-slate-900" data-bind="patient.dateOfBirth">March 15, 1975</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-slate-500">Phone</p>
+                                                    <p class="font-medium text-slate-900" data-bind="patient.phone">(555) 123-4567</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-slate-500">Email</p>
+                                                    <p class="font-medium text-slate-900" data-bind="patient.email">maria.rodriguez@email.com</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Medical History -->
+                                        <div class="bg-slate-50 rounded-lg p-4">
+                                            <h4 class="font-semibold text-slate-900 mb-3">Medical History</h4>
+                                            <div class="space-y-2 text-sm">
+                                                <div class="flex justify-between">
+                                                    <span class="text-slate-700">Chronic GERD</span>
+                                                    <span class="text-slate-500">Diagnosed 2020</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-slate-700">H. pylori infection</span>
+                                                    <span class="text-slate-500">Treated 2019</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Recent Procedures -->
+                                        <div class="bg-slate-50 rounded-lg p-4">
+                                            <h4 class="font-semibold text-slate-900 mb-3">Recent Procedures</h4>
+                                            <div class="space-y-3">
+                                                <div class="flex items-center justify-between py-2 border-b border-slate-200">
+                                                    <div>
+                                                        <p class="font-medium text-slate-900">Upper Endoscopy</p>
+                                                        <p class="text-sm text-slate-500">Routine surveillance for Barrett's esophagus</p>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <p class="text-sm font-medium text-slate-900">Oct 15, 2024</p>
+                                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Complete</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="space-y-4">
+                                        <!-- Quick Actions -->
+                                        <div class="bg-white border border-slate-200 rounded-lg p-4">
+                                            <h4 class="font-semibold text-slate-900 mb-3">Actions</h4>
+                                            <div class="space-y-2">
+                                                <button class="w-full text-left px-3 py-2 text-sm text-medical-blue hover:bg-blue-50 rounded" data-event="click:scheduleAppointment">
+                                                    <i class="fas fa-calendar-plus mr-2"></i>
+                                                    Schedule Appointment
+                                                </button>
+                                                <button class="w-full text-left px-3 py-2 text-sm text-medical-blue hover:bg-blue-50 rounded" data-event="click:addNote">
+                                                    <i class="fas fa-note-medical mr-2"></i>
+                                                    Add Note
+                                                </button>
+                                                <button class="w-full text-left px-3 py-2 text-sm text-medical-blue hover:bg-blue-50 rounded" data-event="click:viewBilling">
+                                                    <i class="fas fa-file-invoice mr-2"></i>
+                                                    View Billing
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Insurance Information -->
+                                        <div class="bg-white border border-slate-200 rounded-lg p-4">
+                                            <h4 class="font-semibold text-slate-900 mb-3">Insurance</h4>
+                                            <div class="text-sm space-y-2">
+                                                <div>
+                                                    <p class="text-slate-500">Primary</p>
+                                                    <p class="font-medium text-slate-900" data-bind="patient.insurance.primary">Blue Cross Blue Shield</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-slate-500">Policy Number</p>
+                                                    <p class="font-medium text-slate-900" data-bind="patient.insurance.policyNumber">BCBS-123456789</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-slate-500">Group Number</p>
+                                                    <p class="font-medium text-slate-900" data-bind="patient.insurance.groupNumber">GRP-456789</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: PatientModal -->
+                
+            </main>
+            <!-- @END_COMPONENT: DashboardContent -->
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: AppLayout -->
+
+    <script>
+        (function() {
+            // TODO: Implement business logic, API calls, and state management
+            // TODO: Connect to Supabase for real-time data
+            // TODO: Implement role-based access control
+            // TODO: Add form validation for medical data entry
+            // TODO: Implement HIPAA-compliant data handling
+            
+            // Demo interactions for mockup
+            document.addEventListener('DOMContentLoaded', function() {
+                // Modal demonstration
+                const modal = document.getElementById('patientModal');
+                
+                // Show modal when clicking on appointments
+                document.querySelectorAll('[data-event*="viewAppointment"]').forEach(el => {
+                    el.addEventListener('click', function() {
+                        modal.classList.remove('hidden');
+                    });
+                });
+                
+                // Hide modal
+                document.querySelectorAll('[data-event*="closeModal"]').forEach(el => {
+                    el.addEventListener('click', function() {
+                        modal.classList.add('hidden');
+                    });
+                });
+                
+                // Close modal when clicking backdrop
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+                
+                // Search input focus effect
+                const searchInput = document.querySelector('input[placeholder="Search patients..."]');
+                if (searchInput) {
+                    searchInput.addEventListener('focus', function() {
+                        this.parentElement.classList.add('ring-2', 'ring-medical-blue');
+                    });
+                    
+                    searchInput.addEventListener('blur', function() {
+                        this.parentElement.classList.remove('ring-2', 'ring-medical-blue');
+                    });
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

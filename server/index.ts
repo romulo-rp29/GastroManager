@@ -1,6 +1,39 @@
+// Carregar variáveis de ambiente primeiro
+import 'dotenv/config';
+
+// Agora importar os outros módulos
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+
+// Verificar se as variáveis de ambiente necessárias estão definidas
+const requiredEnvVars = [
+  'DATABASE_URL',
+  'SUPABASE_URL',
+  'SUPABASE_KEY'
+];
+
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingVars.length > 0) {
+  console.error('❌ Erro: As seguintes variáveis de ambiente estão faltando:');
+  missingVars.forEach(varName => {
+    if (varName === 'SUPABASE_KEY') {
+      console.error(`- ${varName} (encontre em: https://app.supabase.com/project/_/settings/api)`);
+    } else if (varName === 'SUPABASE_URL') {
+      console.error(`- ${varName} (encontre em: https://app.supabase.com/project/_/settings/api)`);
+    } else {
+      console.error(`- ${varName}`);
+    }
+  });
+  process.exit(1);
+}
+
+// Exibir informações de ambiente (sem expor chaves sensíveis)
+console.log('🔧 Configuração do ambiente:');
+console.log(`- NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+console.log(`- SUPABASE_URL: ${process.env.SUPABASE_URL?.substring(0, 30)}...`);
+console.log(`- DATABASE_URL: ${process.env.DATABASE_URL?.split('@')[1] ? `...@${process.env.DATABASE_URL.split('@')[1]}` : 'não configurado'}`);
 
 const app = express();
 app.use(express.json());
@@ -60,12 +93,9 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
+  const PORT = 5000;
+
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
   });
 })();

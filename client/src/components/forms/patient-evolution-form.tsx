@@ -170,14 +170,18 @@ export function PatientEvolutionForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Consulta (Opcional)</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      value={field.value || undefined}
+                      defaultValue={field.value || undefined}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione a consulta" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Nenhuma consulta</SelectItem>
+                        <SelectItem value="none">Nenhuma consulta</SelectItem>
                         {patientAppointments.map((appointment) => (
                           <SelectItem key={appointment.id} value={appointment.id}>
                             {new Date(appointment.appointmentDate).toLocaleDateString('pt-BR')} - {appointment.reason}

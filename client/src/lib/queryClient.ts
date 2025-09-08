@@ -7,10 +7,11 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Função genérica para requisições (POST, PUT, DELETE, GET se precisar)
 export async function apiRequest(
   method: string,
   url: string,
-  data?: unknown | undefined,
+  data?: unknown
 ): Promise<Response> {
   const res = await fetch(url, {
     method,
@@ -24,21 +25,35 @@ export async function apiRequest(
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
+
+// Função padrão para React Query
 export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    const url = queryKey.join("/") as string;
+
+    const res = await fetch(url, {
+      method: "GET", // ✅ Garante que seja sempre GET nas queries
       credentials: "include",
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+      return null as T;
     }
 
     await throwIfResNotOk(res);
-    return await res.json();
+
+    // ✅ Garante que sempre retorne array ou objeto válido
+    const json = await res.json();
+    if (Array.isArray(json)) {
+      return json as T;
+    }
+    if (json && typeof json === "object" && "results" in json && Array.isArray(json.results)) {
+      return json.results as T;
+    }
+    return [] as T;
   };
 
 export const queryClient = new QueryClient({
