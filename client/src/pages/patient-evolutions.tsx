@@ -47,15 +47,26 @@ export default function PatientEvolutions() {
   const queryClient = useQueryClient();
 
   // Fetch patients
-  const { data: patients = [] } = useQuery<Patient[]>({
+  const { data: patientsData = [] } = useQuery({
     queryKey: ["/api/patients"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/patients");
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    },
   });
+  const patients = Array.isArray(patientsData) ? patientsData : [];
 
   // Fetch doctors
-  const { data: doctors = [] } = useQuery({
+  const { data: doctorsData = [] } = useQuery({
     queryKey: ["/api/users", "doctor"],
-    queryFn: () => apiRequest("/api/users?role=doctor"),
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/users?role=doctor");
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    },
   });
+  const doctors = Array.isArray(doctorsData) ? doctorsData : [];
 
   // Fetch appointments
   const { data: appointments = [] } = useQuery<Appointment[]>({
@@ -63,15 +74,22 @@ export default function PatientEvolutions() {
   });
 
   // Fetch evolutions for selected patient
-  const { data: evolutions = [], isLoading } = useQuery({
+  const { data: evolutionsData = [], isLoading } = useQuery({
     queryKey: ["/api/patient-evolutions", selectedPatientId],
-    queryFn: () => apiRequest(`/api/patient-evolutions/${selectedPatientId}`),
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/patient-evolutions/${selectedPatientId}`);
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    },
     enabled: !!selectedPatientId,
   });
+  
+  // Ensure evolutions is always an array
+  const evolutions = Array.isArray(evolutionsData) ? evolutionsData : [];
 
   const createEvolutionMutation = useMutation({
     mutationFn: (data: InsertPatientEvolution) => 
-      apiRequest("/api/patient-evolutions", "POST", data),
+      apiRequest("POST", "/api/patient-evolutions", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/patient-evolutions"] });
       setShowForm(false);
@@ -91,7 +109,7 @@ export default function PatientEvolutions() {
 
   const updateEvolutionMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<InsertPatientEvolution> }) =>
-      apiRequest(`/api/patient-evolutions/${id}`, "PATCH", data),
+      apiRequest("PATCH", `/api/patient-evolutions/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/patient-evolutions"] });
       setEditingEvolution(null);
@@ -112,7 +130,7 @@ export default function PatientEvolutions() {
 
   const deleteEvolutionMutation = useMutation({
     mutationFn: (id: string) =>
-      apiRequest(`/api/patient-evolutions/${id}`, "DELETE"),
+      apiRequest("DELETE", `/api/patient-evolutions/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/patient-evolutions"] });
       toast({

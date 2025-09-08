@@ -66,7 +66,7 @@ export function PatientEvolutionForm({
     defaultValues: {
       patientId: "",
       doctorId: "",
-      appointmentId: "",
+      appointmentId: null,
       evolutionDate: new Date().toISOString().split('T')[0],
       chiefComplaint: "",
       historyOfPresentIllness: "",
@@ -82,6 +82,7 @@ export function PatientEvolutionForm({
   const handleSubmit = (data: FormData) => {
     onSubmit({
       ...data,
+      appointmentId: data.appointmentId === 'none' ? null : data.appointmentId,
       prescriptions: prescriptions as any,
     });
   };
@@ -171,9 +172,9 @@ export function PatientEvolutionForm({
                   <FormItem>
                     <FormLabel>Consulta (Opcional)</FormLabel>
                     <Select 
-                      onValueChange={field.onChange} 
-                      value={field.value || undefined}
-                      defaultValue={field.value || undefined}
+                      onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
+                      value={field.value || 'none'}
+                      defaultValue={field.value || 'none'}
                     >
                       <FormControl>
                         <SelectTrigger>
