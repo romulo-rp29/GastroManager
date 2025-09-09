@@ -1,8 +1,34 @@
 import type { Config } from "tailwindcss";
 
+const { fontFamily } = require("tailwindcss/defaultTheme")
+
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: ["class"],
+  content: [
+    "./client/index.html",
+    "./client/src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        border: "hsl(var(--border))",
+        // ... outros tokens
+      },
+      fontFamily: {
+        sans: ["var(--font-sans)", ...fontFamily.sans],
+      },
+    },
+  },
+  plugins: [],
+}
+
 export default {
   darkMode: ["class"],
-  content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
   theme: {
     extend: {
       borderRadius: {
