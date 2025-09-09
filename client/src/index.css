@@ -42,9 +42,10 @@
 @layer base {
   * {
     border-width: 1px;
-    border-color: var(--border); /* substitui o `border-border` */
+    border-color: var(--border); /* usa a variável do root */
     box-sizing: border-box;
   }
+}
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
