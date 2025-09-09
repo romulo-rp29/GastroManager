@@ -41,9 +41,11 @@ export default {
           DEFAULT: "var(--destructive)",
           foreground: "var(--destructive-foreground)",
         },
-        border: "var(--border)",
-        input: "var(--input)",
-        ring: "var(--ring)",
+        border: {
+          DEFAULT: "var(--border)",
+          input: "var(--input)",
+          ring: "var(--ring)",
+        },
         chart: {
           "1": "var(--chart-1)",
           "2": "var(--chart-2)",
@@ -55,6 +57,9 @@ export default {
         "medical-green": "var(--medical-green)",
         "medical-amber": "var(--medical-amber)",
         "medical-red": "var(--medical-red)",
+      },
+      borderColor: {
+        DEFAULT: 'hsl(var(--border))',
       },
       fontFamily: {
         sans: ["var(--font-sans)"],

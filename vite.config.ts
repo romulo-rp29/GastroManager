@@ -10,6 +10,9 @@ export default defineConfig({
     react(),
     runtimeErrorOverlay(),
   ],
+  css: {
+    postcss: './postcss.config.js',
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "client/src"),
