@@ -3,19 +3,13 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 
 export default defineConfig({
-  root: path.resolve(__dirname, ".."),
+  root: path.resolve(__dirname, "client"), // define a pasta client como root
   plugins: [react()],
-  css: {
-    postcss: path.resolve(__dirname, "postcss.config.js"),
-  },
   build: {
-    outDir: path.resolve(__dirname, "../dist"),
+    outDir: path.resolve(__dirname, "dist/client"), // saída do build na raiz do projeto
     emptyOutDir: true,
-    rollupOptions: {
-      input: path.resolve(__dirname, "../index.html"),
-    },
   },
   server: {
-    port: 3000,
+    port: 5173,
   },
 });
