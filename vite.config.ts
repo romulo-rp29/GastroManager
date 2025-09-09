@@ -11,7 +11,7 @@ export default defineConfig({
     runtimeErrorOverlay(),
   ],
   css: {
-    postcss: path.resolve(__dirname, 'postcss.config.mjs'),
+    postcss: './postcss.config.js',
   },
   resolve: {
     alias: {
