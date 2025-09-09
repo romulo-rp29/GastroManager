@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npx vite",
-    "build": "npx vite build",
-    "preview": "npx vite preview",
-    "start": "NODE_ENV=production node dist/index.js",
+    "dev": "vite",
+    "build": "vite build --outDir dist/client",
+    "preview": "vite preview --port 3000",
+    "start": "vite preview --port 3000",
     "check": "tsc",
     "db:push": "drizzle-kit push"
   },
