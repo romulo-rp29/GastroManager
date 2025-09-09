@@ -1,13 +1,13 @@
 import type { Config } from "tailwindcss";
 
 export default {
-  darkMode: ["class"],
   content: [
-    "./client/index.html",
-    "./client/src/**/*.{js,jsx,ts,tsx}",
-    "./pages/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "../pages/**/*.{js,ts,jsx,tsx}",
+    "../components/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: ["class", "media"],
   theme: {
     extend: {
       borderRadius: {
