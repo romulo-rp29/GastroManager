@@ -1,10 +1,8 @@
-// Load environment variables first
+// Carregar variáveis de ambiente primeiro
 import 'dotenv/config';
 
-// Import other modules
+// Agora importar os outros módulos
 import express, { type Request, Response, NextFunction } from "express";
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -70,23 +68,6 @@ app.use((req, res, next) => {
 
   next();
 });
-
-// Configure CORS
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Parse JSON bodies
-app.use(express.json());
-
-// Parse URL-encoded bodies
-app.use(express.urlencoded({ extended: true }));
-
-// Parse cookies
-app.use(cookieParser());
 
 (async () => {
   const server = await registerRoutes(app);

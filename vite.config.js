@@ -13,15 +13,6 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, 'shared'),
     },
   },
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
-  },
   build: {
     outDir: path.resolve(__dirname, 'dist/client'),
     emptyOutDir: true,
