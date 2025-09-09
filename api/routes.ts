@@ -19,21 +19,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.post("/api/auth/login", async (req, res) => {
     try {
-      console.log("Login request body:", req.body);
-      console.log("Login request body type:", typeof req.body);
+      // Validate request body
+      if (!req.body || typeof req.body !== 'object') {
+        return res.status(400).json({ success: false, message: 'Invalid request body' });
+      }
+
       const { username, password } = loginSchema.parse(req.body);
+      
+      // Get user from database
       const user = await storage.getUserByUsername(username);
       
+      // Validate credentials
       if (!user || user.password !== password) {
-        return res.status(401).json({ message: "Invalid credentials" });
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Invalid username or password' 
+        });
       }
       
-      // In a real app, you would create a session or JWT token here
+      // Remove sensitive data from response
       const { password: _, ...userWithoutPassword } = user;
-      res.json({ user: userWithoutPassword });
+      
+      // Set session cookie (in a real app, you would use JWT or sessions)
+      res.cookie('session_id', 'some-session-token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 1 day
+      });
+      
+      // Return success response
+      return res.status(200).json({ 
+        success: true, 
+        user: userWithoutPassword 
+      });
+      
     } catch (error) {
-      console.error("Login error:", error);
-      res.status(400).json({ message: "Invalid request data", error: error instanceof Error ? error.message : String(error) });
+      console.error('Login error:', error);
+      
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Validation error',
+          errors: error.errors 
+        });
+      }
+      
+      return res.status(500).json({ 
+        success: false, 
+        message: 'An unexpected error occurred' 
+      });
     }
   });
 

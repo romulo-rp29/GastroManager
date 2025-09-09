@@ -31,14 +31,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username, password }),
+        credentials: 'include' // Important for cookies/sessions
       });
 
-      if (response.ok) {
-        const { user } = await response.json();
-        setUser(user);
-        localStorage.setItem('user', JSON.stringify(user));
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Login failed:', errorData);
+        return false;
+      }
+
+      const data = await response.json().catch(() => ({}));
+      if (data.user) {
+        setUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
         return true;
       }
+      
+      console.error('Invalid response format:', data);
       return false;
     } catch (error) {
       console.error('Login error:', error);
