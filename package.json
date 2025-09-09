@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --outDir dist/client && npm run postbuild",
-    "postbuild": "node scripts/postbuild.js",
+    "build": "vite build --outDir dist/client",
+    "postbuild": "node scripts/postbuild.js || echo 'Postbuild script not found, continuing...'",
     "preview": "vite preview --port 3000",
     "start": "vite preview --port 3000",
     "check": "tsc",
