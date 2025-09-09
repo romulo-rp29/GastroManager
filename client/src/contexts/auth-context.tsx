@@ -1,13 +1,11 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { User } from '@shared/schema';
-import { supabase } from '@/lib/supabase';
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { User } from '@shared/schema';
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<{ error: Error | null }>;
-  logout: () => Promise<{ error: Error | null }>;
+  login: (username: string, password: string) => Promise<boolean>;
+  logout: () => void;
   isLoading: boolean;
-  signUp: (email: string, password: string, userData: Partial<User>) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,119 +15,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check active sessions and set the user
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Get user profile from your database
-          const { data: userData, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (error) {
-            console.error('Error fetching user profile:', error);
-            return;
-          }
-          
-          setUser(userData);
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-        }
-        setIsLoading(false);
-      }
-    );
-
-    // Check current session on load
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        setUser(userData);
-      }
-      setIsLoading(false);
-    };
-
-    checkUser();
-    return () => {
-      subscription?.unsubscribe();
-    };
+    // Check for existing session in localStorage
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+    setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      return { error };
-    } catch (error) {
-      console.error('Login error:', error);
-      return { error: error as Error };
-    }
-  };
-
-  const signUp = async (email: string, password: string, userData: Partial<User>) => {
-    try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: userData.name,
-            // Add other user data as needed
-          },
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ username, password }),
+        credentials: 'include' // Important for cookies/sessions
       });
 
-      if (signUpError) throw signUpError;
-
-      // Create user profile in your database
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert([
-            {
-              id: data.user.id,
-              email,
-              name: userData.name,
-              role: userData.role || 'user',
-              // Add other user fields
-            },
-          ]);
-
-        if (profileError) throw profileError;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Login failed:', errorData);
+        return false;
       }
 
-      return { error: null };
+      const data = await response.json().catch(() => ({}));
+      if (data.user) {
+        setUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        return true;
+      }
+      
+      console.error('Invalid response format:', data);
+      return false;
     } catch (error) {
-      console.error('Sign up error:', error);
-      return { error: error as Error };
+      console.error('Login error:', error);
+      return false;
     }
   };
 
-  const logout = async () => {
-    const { error } = await supabase.auth.signOut();
+  const logout = () => {
     setUser(null);
-    return { error };
-  };
-
-  const value = {
-    user,
-    login,
-    logout,
-    isLoading,
-    signUp
+    localStorage.removeItem('user');
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
