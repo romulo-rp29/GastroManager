@@ -1,9 +1,7 @@
-/* Reset básico e estilos globais */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definindo cores globais se quiser usar variáveis CSS */
 :root {
   --background: #f9fafb;
   --foreground: #111827;
@@ -13,9 +11,9 @@
   --border: #e5e7eb;
 }
 
-/* Substituindo border-border que não existe */
 @layer base {
   * {
+    @apply border-border;
     box-sizing: border-box;
   }
 
