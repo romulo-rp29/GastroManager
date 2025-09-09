@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npx vite build --root client",
+    "build": "vite build",
     "preview": "vite preview",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc",
