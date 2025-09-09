@@ -48,9 +48,13 @@ export default defineConfig({
       'lucide-react',
       '@radix-ui/react-dialog',
       '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-slot',
       'zod',
       '@hookform/resolvers',
+      'class-variance-authority',
+      'tailwind-merge'
     ],
+    exclude: ['@prisma/client']
   },
   define: {
     'process.env': {},
